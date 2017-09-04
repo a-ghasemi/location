@@ -83,14 +83,15 @@ class Location
      */
     public function get($ip = '')
     {
-        if (session()->has($this->key)) {
-            return session($this->key);
+        $ip = $ip?$ip:$this->getClientIP();
+        if (session()->has($this->key.'-'.$ip)) {
+            return session($this->key.'-'.$ip);
         }
 
-        if ($location = $this->driver->get($ip ?: $this->getClientIP())) {
+        if ($location = $this->driver->get($ip)) {
             // We'll store the location inside of our session
             // so it isn't retrieved on the next request.
-            session([$this->key => $location]);
+            session([$this->key.'-'.$ip => $location]);
 
             return $location;
         }
