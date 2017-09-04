@@ -4,6 +4,7 @@ namespace Stevebauman\Location;
 
 use Stevebauman\Location\Drivers\Driver;
 use Stevebauman\Location\Exceptions\DriverDoesNotExistException;
+use Cache;
 
 class Location
 {
@@ -84,15 +85,12 @@ class Location
     public function get($ip = '')
     {
         $ip = $ip?$ip:$this->getClientIP();
-        if (session()->has($this->key.'-'.$ip)) {
-            return session($this->key.'-'.$ip);
+        if (Cache::has($this->key.'-'.$ip)) {
+            return Cache::get($this->key.'-'.$ip);
         }
 
         if ($location = $this->driver->get($ip)) {
-            // We'll store the location inside of our session
-            // so it isn't retrieved on the next request.
-            session([$this->key.'-'.$ip => $location]);
-
+            Cache::put($this->key.'-'.$ip , $location , 360);
             return $location;
         }
 
